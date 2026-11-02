@@ -1,0 +1,16 @@
+{
+  "task": "CU-86b3k2x1",
+  "type": "feature",
+  "title": "Listar productos con paginación",
+  "branch": "feat/CU-86b3k2x1-listar-productos-con-paginacion",
+  "base": "dev",
+  "rework": null,
+  "started_at": "2026-10-31T15:02:11Z",
+  "plan_approved_at": "2026-10-31T15:10:40Z",
+  "phases": [
+    { "n": 1, "title": "Endpoint GET /api/products", "subtask": null, "status": "done", "commit": "a1b2c3d" },
+    { "n": 2, "title": "Tests de integración", "subtask": null, "status": "pending", "commit": null }
+  ],
+  "doc": "docs/tasks/CU-86b3k2x1.md",
+  "delivered": []
+}

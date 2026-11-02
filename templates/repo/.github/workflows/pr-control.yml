@@ -1,0 +1,68 @@
+# PR control: el primer filtro automático después de pr-flow.
+# Secretos, seguridad, lint, tests y build. Los tres últimos corren los MISMOS
+# checks que dev-flow corrió en local (scripts/flow-checks.mjs), para que el PR sea
+# la red de seguridad y no el lugar donde se descubren los problemas.
+name: PR control
+
+on:
+  pull_request:
+    branches: [dev]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: pr-control-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  title:
+    name: Título con ID de ClickUp
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verificar formato "[CU-<id>] …"
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          if ! [[ "$TITLE" =~ ^\[CU-[A-Za-z0-9-]+\]\  ]]; then
+            echo "::error::El título debe empezar por [CU-<id>]. Ábrelo con pr-flow."
+            exit 1
+          fi
+
+  secrets:
+    name: Secretos
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  security:
+    name: Seguridad de dependencias
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm audit --audit-level=high --omit=dev
+
+  checks:
+    name: Lint, tipos, tests y build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: node scripts/flow-checks.mjs

@@ -1,0 +1,14 @@
+{
+  "repo": "mi-org/mi-backend",
+  "baseBranch": "dev",
+  "docsDir": "docs/tasks",
+  "clickup": {
+    "listName": "Backlog — Mi proyecto"
+  },
+  "checks": [
+    { "name": "lint", "cmd": "npm run lint" },
+    { "name": "types", "cmd": "npm run typecheck" },
+    { "name": "test", "cmd": "npm test" },
+    { "name": "build", "cmd": "npm run build" }
+  ]
+}

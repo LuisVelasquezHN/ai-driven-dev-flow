@@ -1,0 +1,1254 @@
+{
+  "project": "Pedidos Ferretería",
+  "version": 1,
+  "mvp_rf": [
+    "RF-01",
+    "RF-02",
+    "RF-03",
+    "RF-04",
+    "RF-05",
+    "RF-06",
+    "RF-07",
+    "RF-08",
+    "RF-09",
+    "RF-10",
+    "RNF-01",
+    "RNF-02",
+    "RNF-03",
+    "RNF-04",
+    "RNF-05"
+  ],
+  "prd_ref": "examples/demo/01-prd.md",
+  "spec_ref": "examples/demo/02-spec-tecnica.md",
+  "tasks": [
+    {
+      "key": "S-01",
+      "title": "Preparar repo pedidos-api con base, CI y flujo",
+      "type": "feature",
+      "parent": null,
+      "area": "backend",
+      "repo": "ferreteria/pedidos-api",
+      "module": "base",
+      "context": "Base técnica del backend según las decisiones técnicas de la spec.",
+      "acceptance": [
+        "Dado el repo clonado, cuando corro npm ci y node scripts/flow-checks.mjs, entonces lint, tipos, test y build pasan",
+        "Dado un PR a dev, cuando se abre, entonces corre PR control (secretos, seguridad, checks)",
+        "Dado Postgres local, cuando corro las migraciones, entonces suben y bajan sin errores"
+      ],
+      "out_of_scope": [
+        "Despliegue a staging (lo configura el lead)"
+      ],
+      "tests": [
+        "Prueba de humo: GET /api/health responde 200"
+      ],
+      "depends_on": [],
+      "estimate_h": 4,
+      "contract": "GET /api/health → { status: 'ok' }"
+    },
+    {
+      "key": "S-02",
+      "title": "Preparar repo pedidos-web con base, CI y flujo",
+      "type": "feature",
+      "parent": null,
+      "area": "frontend",
+      "repo": "ferreteria/pedidos-web",
+      "module": "base",
+      "context": "Base técnica del frontend según las decisiones técnicas de la spec.",
+      "acceptance": [
+        "Dado el repo clonado, cuando corro node scripts/flow-checks.mjs, entonces lint, tipos, test y build pasan",
+        "Dado un PR a dev, cuando se abre, entonces corre PR control"
+      ],
+      "out_of_scope": [
+        "Sistema visual (lo trae D-01)"
+      ],
+      "tests": [
+        "Prueba de componente de la app vacía"
+      ],
+      "depends_on": [],
+      "estimate_h": 3,
+      "contract": "Variable VITE_API_URL apunta a pedidos-api"
+    },
+    {
+      "key": "D-01",
+      "title": "Diseñar sistema visual, layout por rol y login",
+      "type": "feature",
+      "parent": null,
+      "area": "design",
+      "repo": null,
+      "module": "identidad",
+      "context": "Base visual mobile-first (RNF-01) para todas las pantallas.",
+      "acceptance": [
+        "Componentes base (botón, campo, tabla/lista, estado vacío, error) en 360 px y escritorio",
+        "Login y navegación por rol aprobados por el cliente"
+      ],
+      "out_of_scope": [
+        "Ilustraciones y marca nueva"
+      ],
+      "tests": [],
+      "depends_on": [],
+      "estimate_h": 6
+    },
+    {
+      "key": "D-02",
+      "title": "Diseñar importación de catálogo, usuarios y clientes",
+      "type": "feature",
+      "parent": null,
+      "area": "design",
+      "repo": null,
+      "module": "clientes",
+      "context": "Pantallas administrativas y de clientes.",
+      "acceptance": [
+        "Importar catálogo con resultado y errores por fila",
+        "Lista y formulario de usuarios y de clientes con estados vacío y error"
+      ],
+      "out_of_scope": [
+        "Edición individual de productos (Fase 2)"
+      ],
+      "tests": [],
+      "depends_on": [
+        "D-01"
+      ],
+      "estimate_h": 4
+    },
+    {
+      "key": "D-03",
+      "title": "Diseñar alta de pedido, mis pedidos y bandeja de bodega",
+      "type": "feature",
+      "parent": null,
+      "area": "design",
+      "repo": null,
+      "module": "pedidos",
+      "context": "Pantallas de uso diario del vendedor y de bodega.",
+      "acceptance": [
+        "Alta de pedido usable con una mano en 360 px, con búsqueda de productos y total visible",
+        "Bandeja de bodega con estados vacío, error y conflicto"
+      ],
+      "out_of_scope": [
+        "Notificaciones al cliente (Fase 2)"
+      ],
+      "tests": [],
+      "depends_on": [
+        "D-01"
+      ],
+      "estimate_h": 6
+    },
+    {
+      "key": "D-04",
+      "title": "Diseñar resumen mensual del gerente",
+      "type": "feature",
+      "parent": null,
+      "area": "design",
+      "repo": null,
+      "module": "reportes",
+      "context": "Tabla por sucursal con selector de mes.",
+      "acceptance": [
+        "Tabla por sucursal con fila total y mes seleccionable",
+        "Estado de mes sin datos"
+      ],
+      "out_of_scope": [
+        "Gráficos de tendencia (Fase 2)"
+      ],
+      "tests": [],
+      "depends_on": [
+        "D-01"
+      ],
+      "estimate_h": 2
+    },
+    {
+      "key": "M01-BE",
+      "title": "Catálogos — backend",
+      "type": "module",
+      "parent": null,
+      "area": "module",
+      "repo": "ferreteria/pedidos-api",
+      "module": "catalogo",
+      "rf": [
+        "RF-01",
+        "RF-02",
+        "RNF-02"
+      ],
+      "context": "Sucursales, categorías y productos; base de todo pedido.",
+      "acceptance": [],
+      "out_of_scope": [
+        "Gestión de stock",
+        "Edición individual de productos"
+      ],
+      "tests": [],
+      "depends_on": [
+        "S-01"
+      ]
+    },
+    {
+      "key": "M01-BE-01",
+      "title": "Crear tablas de sucursales, categorías y productos",
+      "type": "feature",
+      "parent": "M01-BE",
+      "area": "db",
+      "repo": "ferreteria/pedidos-api",
+      "module": "catalogo",
+      "rf": [
+        "RF-01",
+        "RF-02",
+        "RNF-02"
+      ],
+      "context": "Datos de referencia del módulo 1.",
+      "acceptance": [
+        "Dado el esquema migrado, cuando consulto branches, entonces existen las 3 sucursales",
+        "Dado un producto con código repetido, cuando lo inserto, entonces falla por unicidad",
+        "Dado un precio negativo, cuando lo inserto, entonces falla por restricción"
+      ],
+      "out_of_scope": [
+        "Historial de precios"
+      ],
+      "tests": [
+        "Migración sube y baja limpia"
+      ],
+      "depends_on": [],
+      "estimate_h": 2,
+      "contract": "branches(id, name UNIQUE) · categories(id, name UNIQUE) · products(id, code UNIQUE, name, category_id FK, price NUMERIC(12,2) >= 0, active, updated_at) + índice pg_trgm en name y code"
+    },
+    {
+      "key": "M01-BE-02",
+      "title": "Importar catálogo desde Excel",
+      "type": "feature",
+      "parent": "M01-BE",
+      "area": "backend",
+      "repo": "ferreteria/pedidos-api",
+      "module": "catalogo",
+      "rf": [
+        "RF-01"
+      ],
+      "context": "Carga inicial y actualizaciones del catálogo (RF-01).",
+      "acceptance": [
+        "Dado un Excel válido, cuando lo importo, entonces se crean o actualizan productos por código y se informan los conteos",
+        "Dada una fila inválida, cuando importo, entonces se reporta su número de fila y el resto se importa",
+        "Dado un código repetido en el archivo, cuando importo, entonces gana la última fila y se informa advertencia"
+      ],
+      "out_of_scope": [
+        "Desactivar productos ausentes del Excel",
+        "Importación en segundo plano"
+      ],
+      "tests": [
+        "Integración con Excel de 4 filas: 2 nuevas, 1 actualizada, 1 inválida"
+      ],
+      "depends_on": [],
+      "estimate_h": 5,
+      "contract": "POST /api/products/import (multipart .xlsx, rol admin) → { created, updated, errors: [{ row, reason }] }"
+    },
+    {
+      "key": "M01-BE-03",
+      "title": "Buscar productos y listar sucursales",
+      "type": "feature",
+      "parent": "M01-BE",
+      "area": "backend",
+      "repo": "ferreteria/pedidos-api",
+      "module": "catalogo",
+      "rf": [
+        "RF-02",
+        "RNF-02"
+      ],
+      "context": "El vendedor busca productos al armar pedidos (RF-02).",
+      "acceptance": [
+        "Dado q='taladro', cuando busco, entonces vienen solo productos activos cuyo nombre o código coincide",
+        "Dado page=2, cuando listo, entonces vienen hasta 20 productos y el total",
+        "Dados 5.000 productos, cuando busco, entonces responde en menos de 1 s"
+      ],
+      "out_of_scope": [
+        "Búsqueda por categoría",
+        "Filtros de precio"
+      ],
+      "tests": [
+        "Integración: búsqueda, paginación e inactivos excluidos",
+        "Prueba de rendimiento con 5.000 productos"
+      ],
+      "depends_on": [],
+      "estimate_h": 3,
+      "contract": "GET /api/products?q=&page= → { items: [{ id, code, name, category, price }], total } · GET /api/branches → [{ id, name }]"
+    },
+    {
+      "key": "M01-BE-04",
+      "title": "Pruebas del módulo catálogos (API)",
+      "type": "feature",
+      "parent": "M01-BE",
+      "area": "tests",
+      "repo": "ferreteria/pedidos-api",
+      "module": "catalogo",
+      "rf": [
+        "RF-01",
+        "RF-02",
+        "RNF-02"
+      ],
+      "context": "Cierre del módulo.",
+      "acceptance": [
+        "Flujo importar → buscar cubierto de punta a punta",
+        "Cobertura del módulo ≥ 80 %"
+      ],
+      "out_of_scope": [
+        "Pruebas de carga"
+      ],
+      "tests": [
+        "E2E API: importar y buscar"
+      ],
+      "depends_on": [],
+      "estimate_h": 2
+    },
+    {
+      "key": "M01-FE",
+      "title": "Catálogos — frontend",
+      "type": "module",
+      "parent": null,
+      "area": "module",
+      "repo": "ferreteria/pedidos-web",
+      "module": "catalogo",
+      "rf": [
+        "RF-01"
+      ],
+      "context": "Pantalla de importación para el administrador.",
+      "acceptance": [],
+      "out_of_scope": [
+        "Buscador de productos (vive en el alta de pedido)"
+      ],
+      "tests": [],
+      "depends_on": [
+        "M01-BE",
+        "M02-FE",
+        "D-02"
+      ]
+    },
+    {
+      "key": "M01-FE-01",
+      "title": "Pantalla de importación de catálogo",
+      "type": "feature",
+      "parent": "M01-FE",
+      "area": "frontend",
+      "repo": "ferreteria/pedidos-web",
+      "module": "catalogo",
+      "rf": [
+        "RF-01"
+      ],
+      "context": "El administrador sube el Excel y ve el resultado (RF-01).",
+      "acceptance": [
+        "Dado un Excel, cuando lo subo, entonces veo creados, actualizados y la lista de filas con error",
+        "Dado un error del servidor, cuando subo, entonces veo el mensaje y puedo reintentar",
+        "Dado un usuario sin rol admin, cuando entra a la ruta, entonces no ve la pantalla"
+      ],
+      "out_of_scope": [
+        "Edición de productos"
+      ],
+      "tests": [
+        "Componente: resultado con errores por fila"
+      ],
+      "depends_on": [],
+      "estimate_h": 4,
+      "contract": "Consume POST /api/products/import (M01-BE-02)"
+    },
+    {
+      "key": "M01-FE-02",
+      "title": "Pruebas del módulo catálogos (web)",
+      "type": "feature",
+      "parent": "M01-FE",
+      "area": "tests",
+      "repo": "ferreteria/pedidos-web",
+      "module": "catalogo",
+      "rf": [
+        "RF-01"
+      ],
+      "context": "Cierre del módulo.",
+      "acceptance": [
+        "Subida e informe de resultado cubiertos e2e",
+        "Acceso denegado a no admin cubierto"
+      ],
+      "out_of_scope": [
+        "Pruebas visuales"
+      ],
+      "tests": [
+        "E2E: importar catálogo"
+      ],
+      "depends_on": [],
+      "estimate_h": 2
+    },
+    {
+      "key": "M02-BE",
+      "title": "Identidad — backend",
+      "type": "module",
+      "parent": null,
+      "area": "module",
+      "repo": "ferreteria/pedidos-api",
+      "module": "identidad",
+      "rf": [
+        "RF-10",
+        "RNF-04"
+      ],
+      "context": "Usuarios, roles, sesión y autorización de todas las rutas.",
+      "acceptance": [],
+      "out_of_scope": [
+        "Recuperación de contraseña por correo"
+      ],
+      "tests": [],
+      "depends_on": [
+        "M01-BE"
+      ]
+    },
+    {
+      "key": "M02-BE-01",
+      "title": "Crear tablas de usuarios y sesiones con seed de admin",
+      "type": "feature",
+      "parent": "M02-BE",
+      "area": "db",
+      "repo": "ferreteria/pedidos-api",
+      "module": "identidad",
+      "rf": [
+        "RF-10",
+        "RNF-04"
+      ],
+      "context": "Base de la identidad (RF-10).",
+      "acceptance": [
+        "Dado un vendedor sin sucursal, cuando lo inserto, entonces falla por restricción",
+        "Dado el comando de seed, cuando lo corro, entonces existe un admin activo"
+      ],
+      "out_of_scope": [
+        "Auditoría de accesos"
+      ],
+      "tests": [
+        "Migración sube y baja limpia"
+      ],
+      "depends_on": [],
+      "estimate_h": 2,
+      "contract": "users(id, email UNIQUE, name, password_hash, role enum, branch_id FK NULL, active) · sessions(id uuid, user_id FK, expires_at)"
+    },
+    {
+      "key": "M02-BE-02",
+      "title": "Login, logout, sesión y autorización por rol",
+      "type": "feature",
+      "parent": "M02-BE",
+      "area": "backend",
+      "repo": "ferreteria/pedidos-api",
+      "module": "identidad",
+      "rf": [
+        "RF-10",
+        "RNF-04"
+      ],
+      "context": "Acceso con usuario y contraseña; cada rol ve lo suyo (RNF-04).",
+      "acceptance": [
+        "Dadas credenciales válidas, cuando hago login, entonces recibo cookie httpOnly y mis datos",
+        "Dadas credenciales inválidas, cuando hago login, entonces 401 con mensaje genérico",
+        "Dados 5 intentos fallidos en 10 min, cuando intento de nuevo, entonces 429",
+        "Dada cualquier ruta /api (incluidas las de catálogos), cuando llamo sin sesión, entonces 401"
+      ],
+      "out_of_scope": [
+        "SSO",
+        "Doble factor"
+      ],
+      "tests": [
+        "Integración: login, logout, expiración, rate limit y 401 en rutas protegidas"
+      ],
+      "depends_on": [],
+      "estimate_h": 6,
+      "contract": "POST /api/auth/login { email, password } · POST /api/auth/logout · GET /api/auth/me → { id, name, role, branch }"
+    },
+    {
+      "key": "M02-BE-03",
+      "title": "Administrar usuarios",
+      "type": "feature",
+      "parent": "M02-BE",
+      "area": "backend",
+      "repo": "ferreteria/pedidos-api",
+      "module": "identidad",
+      "rf": [
+        "RF-10",
+        "RNF-04"
+      ],
+      "context": "El admin crea usuarios con rol y sucursal y los desactiva (RF-10).",
+      "acceptance": [
+        "Dado un admin, cuando creo un usuario bodega con sucursal, entonces puede hacer login",
+        "Dado un usuario desactivado, cuando tenía sesión, entonces su siguiente llamada da 401",
+        "Dado el único admin, cuando intenta desactivarse, entonces 400"
+      ],
+      "out_of_scope": [
+        "Invitaciones por correo"
+      ],
+      "tests": [
+        "Integración: crear, editar, desactivar y regla del último admin"
+      ],
+      "depends_on": [],
+      "estimate_h": 4,
+      "contract": "GET/POST /api/users · PATCH /api/users/:id { name?, role?, branchId?, password?, active? } (rol admin)"
+    },
+    {
+      "key": "M02-BE-04",
+      "title": "Pruebas del módulo identidad (API)",
+      "type": "feature",
+      "parent": "M02-BE",
+      "area": "tests",
+      "repo": "ferreteria/pedidos-api",
+      "module": "identidad",
+      "rf": [
+        "RF-10",
+        "RNF-04"
+      ],
+      "context": "Cierre del módulo.",
+      "acceptance": [
+        "Matriz rol × ruta cubierta",
+        "Cobertura del módulo ≥ 80 %"
+      ],
+      "out_of_scope": [
+        "Pruebas de penetración"
+      ],
+      "tests": [
+        "E2E API: permisos por rol en todas las rutas"
+      ],
+      "depends_on": [],
+      "estimate_h": 2
+    },
+    {
+      "key": "M02-FE",
+      "title": "Identidad — frontend",
+      "type": "module",
+      "parent": null,
+      "area": "module",
+      "repo": "ferreteria/pedidos-web",
+      "module": "identidad",
+      "rf": [
+        "RF-10",
+        "RNF-01",
+        "RNF-04"
+      ],
+      "context": "Login, navegación por rol y administración de usuarios.",
+      "acceptance": [],
+      "out_of_scope": [
+        "Perfil de usuario editable"
+      ],
+      "tests": [],
+      "depends_on": [
+        "M02-BE",
+        "S-02",
+        "D-01"
+      ]
+    },
+    {
+      "key": "M02-FE-01",
+      "title": "Login, sesión y navegación por rol",
+      "type": "feature",
+      "parent": "M02-FE",
+      "area": "frontend",
+      "repo": "ferreteria/pedidos-web",
+      "module": "identidad",
+      "rf": [
+        "RF-10",
+        "RNF-01",
+        "RNF-04"
+      ],
+      "context": "Entrada a la app y menú según rol (RNF-04, RNF-01).",
+      "acceptance": [
+        "Dadas credenciales válidas, cuando entro, entonces llego a la pantalla inicial de mi rol",
+        "Dada una sesión expirada, cuando navego, entonces vuelvo al login",
+        "Dado un celular de 360 px, cuando uso el menú, entonces todo es accesible sin scroll horizontal"
+      ],
+      "out_of_scope": [
+        "Recordar sesión entre dispositivos"
+      ],
+      "tests": [
+        "Componente: guard de rutas por rol"
+      ],
+      "depends_on": [],
+      "estimate_h": 5,
+      "contract": "Consume /api/auth/* (M02-BE-02)"
+    },
+    {
+      "key": "M02-FE-02",
+      "title": "Pantalla de administración de usuarios",
+      "type": "feature",
+      "parent": "M02-FE",
+      "area": "frontend",
+      "repo": "ferreteria/pedidos-web",
+      "module": "identidad",
+      "rf": [
+        "RF-10",
+        "RNF-01",
+        "RNF-04"
+      ],
+      "context": "El admin gestiona usuarios (RF-10).",
+      "acceptance": [
+        "Dado el admin, cuando creo un usuario vendedor sin sucursal, entonces el formulario lo impide",
+        "Dado un usuario, cuando lo desactivo, entonces la lista lo muestra inactivo"
+      ],
+      "out_of_scope": [
+        "Importación masiva de usuarios"
+      ],
+      "tests": [
+        "Componente: formulario con validación de rol y sucursal"
+      ],
+      "depends_on": [],
+      "estimate_h": 4,
+      "contract": "Consume /api/users (M02-BE-03)"
+    },
+    {
+      "key": "M02-FE-03",
+      "title": "Pruebas del módulo identidad (web)",
+      "type": "feature",
+      "parent": "M02-FE",
+      "area": "tests",
+      "repo": "ferreteria/pedidos-web",
+      "module": "identidad",
+      "rf": [
+        "RF-10",
+        "RNF-01",
+        "RNF-04"
+      ],
+      "context": "Cierre del módulo.",
+      "acceptance": [
+        "Login y redirección por rol cubiertos e2e",
+        "Alta y desactivación de usuario cubiertas e2e"
+      ],
+      "out_of_scope": [
+        "Pruebas visuales"
+      ],
+      "tests": [
+        "E2E: login por cada rol y gestión de usuarios"
+      ],
+      "depends_on": [],
+      "estimate_h": 2
+    },
+    {
+      "key": "M03-BE",
+      "title": "Clientes — backend",
+      "type": "module",
+      "parent": null,
+      "area": "module",
+      "repo": "ferreteria/pedidos-api",
+      "module": "clientes",
+      "rf": [
+        "RF-03"
+      ],
+      "context": "Clientes empresa compartidos entre sucursales.",
+      "acceptance": [],
+      "out_of_scope": [
+        "Crédito y límites por cliente"
+      ],
+      "tests": [],
+      "depends_on": [
+        "M02-BE"
+      ]
+    },
+    {
+      "key": "M03-BE-01",
+      "title": "Crear tabla de clientes",
+      "type": "feature",
+      "parent": "M03-BE",
+      "area": "db",
+      "repo": "ferreteria/pedidos-api",
+      "module": "clientes",
+      "rf": [
+        "RF-03"
+      ],
+      "context": "Datos de clientes empresa.",
+      "acceptance": [
+        "Dado un identificador fiscal repetido, cuando inserto, entonces falla por unicidad",
+        "Dado un cliente sin razón social, cuando inserto, entonces falla"
+      ],
+      "out_of_scope": [
+        "Múltiples direcciones por cliente"
+      ],
+      "tests": [
+        "Migración sube y baja limpia"
+      ],
+      "depends_on": [],
+      "estimate_h": 1,
+      "contract": "customers(id, tax_id UNIQUE, business_name, contact_name, phone, email, address, created_by FK, active)"
+    },
+    {
+      "key": "M03-BE-02",
+      "title": "Crear, editar y buscar clientes",
+      "type": "feature",
+      "parent": "M03-BE",
+      "area": "backend",
+      "repo": "ferreteria/pedidos-api",
+      "module": "clientes",
+      "rf": [
+        "RF-03"
+      ],
+      "context": "Registro de clientes (RF-03).",
+      "acceptance": [
+        "Dado un identificador con guiones, cuando creo el cliente, entonces se guarda normalizado",
+        "Dado un identificador existente, cuando creo, entonces 409",
+        "Dado q='acme', cuando busco, entonces vienen coincidencias por razón social o identificador"
+      ],
+      "out_of_scope": [
+        "Borrado físico de clientes"
+      ],
+      "tests": [
+        "Integración: crear, editar, buscar y duplicado"
+      ],
+      "depends_on": [],
+      "estimate_h": 4,
+      "contract": "GET /api/customers?q=&page= · POST /api/customers · PATCH /api/customers/:id"
+    },
+    {
+      "key": "M03-BE-03",
+      "title": "Pruebas del módulo clientes (API)",
+      "type": "feature",
+      "parent": "M03-BE",
+      "area": "tests",
+      "repo": "ferreteria/pedidos-api",
+      "module": "clientes",
+      "rf": [
+        "RF-03"
+      ],
+      "context": "Cierre del módulo.",
+      "acceptance": [
+        "Alta, edición y búsqueda cubiertas",
+        "Permisos por rol cubiertos"
+      ],
+      "out_of_scope": [
+        "Pruebas de carga"
+      ],
+      "tests": [
+        "E2E API de clientes"
+      ],
+      "depends_on": [],
+      "estimate_h": 1
+    },
+    {
+      "key": "M03-FE",
+      "title": "Clientes — frontend",
+      "type": "module",
+      "parent": null,
+      "area": "module",
+      "repo": "ferreteria/pedidos-web",
+      "module": "clientes",
+      "rf": [
+        "RF-03"
+      ],
+      "context": "Lista y formulario de clientes para el vendedor.",
+      "acceptance": [],
+      "out_of_scope": [
+        "Ficha de cliente con historial de pedidos"
+      ],
+      "tests": [],
+      "depends_on": [
+        "M03-BE",
+        "M02-FE",
+        "D-02"
+      ]
+    },
+    {
+      "key": "M03-FE-01",
+      "title": "Lista y formulario de clientes",
+      "type": "feature",
+      "parent": "M03-FE",
+      "area": "frontend",
+      "repo": "ferreteria/pedidos-web",
+      "module": "clientes",
+      "rf": [
+        "RF-03"
+      ],
+      "context": "El vendedor registra clientes (RF-03).",
+      "acceptance": [
+        "Dado un vendedor, cuando busco un cliente, entonces veo coincidencias mientras escribo",
+        "Dado un identificador repetido, cuando guardo, entonces veo el error en ese campo"
+      ],
+      "out_of_scope": [
+        "Importación de clientes desde Excel"
+      ],
+      "tests": [
+        "Componente: formulario con validaciones"
+      ],
+      "depends_on": [],
+      "estimate_h": 5,
+      "contract": "Consume /api/customers (M03-BE-02)"
+    },
+    {
+      "key": "M03-FE-02",
+      "title": "Pruebas del módulo clientes (web)",
+      "type": "feature",
+      "parent": "M03-FE",
+      "area": "tests",
+      "repo": "ferreteria/pedidos-web",
+      "module": "clientes",
+      "rf": [
+        "RF-03"
+      ],
+      "context": "Cierre del módulo.",
+      "acceptance": [
+        "Alta y edición de cliente cubiertas e2e",
+        "Error de duplicado cubierto e2e"
+      ],
+      "out_of_scope": [
+        "Pruebas visuales"
+      ],
+      "tests": [
+        "E2E: alta y edición de cliente"
+      ],
+      "depends_on": [],
+      "estimate_h": 2
+    },
+    {
+      "key": "M04-BE",
+      "title": "Pedidos — backend",
+      "type": "module",
+      "parent": null,
+      "area": "module",
+      "repo": "ferreteria/pedidos-api",
+      "module": "pedidos",
+      "rf": [
+        "RF-04",
+        "RF-05",
+        "RF-06",
+        "RF-07",
+        "RF-08",
+        "RNF-03",
+        "RNF-05"
+      ],
+      "context": "Núcleo del negocio: pedidos, líneas y estados auditados.",
+      "acceptance": [],
+      "out_of_scope": [
+        "Pagos",
+        "Despachos parciales"
+      ],
+      "tests": [],
+      "depends_on": [
+        "M01-BE",
+        "M03-BE"
+      ]
+    },
+    {
+      "key": "M04-BE-01",
+      "title": "Crear tablas de pedidos, líneas e historial de estados",
+      "type": "feature",
+      "parent": "M04-BE",
+      "area": "db",
+      "repo": "ferreteria/pedidos-api",
+      "module": "pedidos",
+      "rf": [
+        "RF-04",
+        "RF-05",
+        "RF-06",
+        "RF-07",
+        "RF-08",
+        "RNF-03",
+        "RNF-05"
+      ],
+      "context": "Persistencia de pedidos (RNF-03, RNF-05).",
+      "acceptance": [
+        "Dada una línea con cantidad 0, cuando inserto, entonces falla",
+        "Dado el historial de estados, cuando intento borrar o editar una fila, entonces el rol de la app no tiene permiso"
+      ],
+      "out_of_scope": [
+        "Descuentos por línea"
+      ],
+      "tests": [
+        "Migración sube y baja limpia"
+      ],
+      "depends_on": [],
+      "estimate_h": 2,
+      "contract": "orders(id, number UNIQUE, customer_id, branch_id, seller_id, status enum, notes, total NUMERIC(14,2), created_at) · order_lines(order_id, product_id, qty > 0, unit_price, line_total) · order_status_history(order_id, from_status, to_status, user_id, at)"
+    },
+    {
+      "key": "M04-BE-02",
+      "title": "Crear y cancelar pedidos",
+      "type": "feature",
+      "parent": "M04-BE",
+      "area": "backend",
+      "repo": "ferreteria/pedidos-api",
+      "module": "pedidos",
+      "rf": [
+        "RF-04",
+        "RF-05",
+        "RNF-05"
+      ],
+      "context": "El vendedor registra pedidos (RF-04, RF-05).",
+      "acceptance": [
+        "Dado un pedido con líneas, cuando lo creo, entonces queda pendiente, con número correlativo y total calculado en el servidor",
+        "Dado un cambio de precio posterior, cuando consulto el pedido, entonces conserva el precio original",
+        "Dado un pedido pendiente propio, cuando lo cancelo, entonces queda cancelado y en el historial",
+        "Dado un producto inactivo en las líneas, cuando creo, entonces 400 indicando la línea"
+      ],
+      "out_of_scope": [
+        "Editar líneas de un pedido creado"
+      ],
+      "tests": [
+        "Integración: creación, precio congelado, cancelación y producto inactivo"
+      ],
+      "depends_on": [],
+      "estimate_h": 6,
+      "contract": "POST /api/orders { customerId, branchId, notes?, lines: [{ productId, qty }] } · PATCH /api/orders/:id/status { status: 'cancelado' }"
+    },
+    {
+      "key": "M04-BE-03",
+      "title": "Preparar y despachar pedidos",
+      "type": "feature",
+      "parent": "M04-BE",
+      "area": "backend",
+      "repo": "ferreteria/pedidos-api",
+      "module": "pedidos",
+      "rf": [
+        "RF-08",
+        "RNF-03"
+      ],
+      "context": "Bodega mueve los pedidos de su sucursal (RF-08).",
+      "acceptance": [
+        "Dado un pedido pendiente de mi sucursal, cuando lo marco preparado, entonces cambia y queda en el historial con mi usuario",
+        "Dado un pedido de otra sucursal, cuando intento moverlo, entonces 403",
+        "Dado un pedido ya movido por otro, cuando intento la misma transición, entonces 409"
+      ],
+      "out_of_scope": [
+        "Asignar pedidos a un bodeguero específico"
+      ],
+      "tests": [
+        "Unitarias de la máquina de estados",
+        "Integración: concurrencia con 409"
+      ],
+      "depends_on": [],
+      "estimate_h": 4,
+      "contract": "PATCH /api/orders/:id/status { status: 'preparado' | 'despachado' }"
+    },
+    {
+      "key": "M04-BE-04",
+      "title": "Listar y ver pedidos según rol",
+      "type": "feature",
+      "parent": "M04-BE",
+      "area": "backend",
+      "repo": "ferreteria/pedidos-api",
+      "module": "pedidos",
+      "rf": [
+        "RF-06",
+        "RF-07"
+      ],
+      "context": "Mis pedidos y bandeja de bodega (RF-06, RF-07).",
+      "acceptance": [
+        "Dado un vendedor con mine=true, cuando listo, entonces veo solo mis pedidos",
+        "Dado bodega, cuando listo, entonces veo solo pendientes y preparados de mi sucursal, del más antiguo al más nuevo",
+        "Dado un pedido, cuando veo el detalle, entonces incluye líneas e historial"
+      ],
+      "out_of_scope": [
+        "Exportar pedidos"
+      ],
+      "tests": [
+        "Integración: filtros por rol"
+      ],
+      "depends_on": [],
+      "estimate_h": 3,
+      "contract": "GET /api/orders?status=&branchId=&mine=&page= · GET /api/orders/:id"
+    },
+    {
+      "key": "M04-BE-05",
+      "title": "Pruebas del módulo pedidos (API)",
+      "type": "feature",
+      "parent": "M04-BE",
+      "area": "tests",
+      "repo": "ferreteria/pedidos-api",
+      "module": "pedidos",
+      "rf": [
+        "RF-04",
+        "RF-05",
+        "RF-06",
+        "RF-07",
+        "RF-08",
+        "RNF-03",
+        "RNF-05"
+      ],
+      "context": "Cierre del módulo.",
+      "acceptance": [
+        "Ciclo pendiente → preparado → despachado y cancelación cubiertos",
+        "Transiciones inválidas y permisos por sucursal cubiertos"
+      ],
+      "out_of_scope": [
+        "Pruebas de carga"
+      ],
+      "tests": [
+        "E2E API del ciclo de vida del pedido"
+      ],
+      "depends_on": [],
+      "estimate_h": 3
+    },
+    {
+      "key": "M04-FE",
+      "title": "Pedidos — frontend",
+      "type": "module",
+      "parent": null,
+      "area": "module",
+      "repo": "ferreteria/pedidos-web",
+      "module": "pedidos",
+      "rf": [
+        "RNF-01",
+        "RF-02",
+        "RF-04",
+        "RF-05",
+        "RF-06",
+        "RF-07",
+        "RF-08"
+      ],
+      "context": "Pantallas diarias del vendedor y de bodega.",
+      "acceptance": [],
+      "out_of_scope": [
+        "App móvil nativa"
+      ],
+      "tests": [],
+      "depends_on": [
+        "M04-BE",
+        "M03-FE",
+        "D-03"
+      ]
+    },
+    {
+      "key": "M04-FE-01",
+      "title": "Pantalla de alta de pedido con buscador de productos",
+      "type": "feature",
+      "parent": "M04-FE",
+      "area": "frontend",
+      "repo": "ferreteria/pedidos-web",
+      "module": "pedidos",
+      "rf": [
+        "RF-02",
+        "RF-04"
+      ],
+      "context": "El vendedor arma y confirma pedidos (RF-02, RF-04).",
+      "acceptance": [
+        "Dado un cliente elegido, cuando agrego productos, entonces veo el total actualizado",
+        "Dado un error al confirmar, cuando ocurre, entonces veo el mensaje y no pierdo las líneas",
+        "Dado un celular de 360 px, cuando armo un pedido, entonces no hay scroll horizontal"
+      ],
+      "out_of_scope": [
+        "Guardar borradores"
+      ],
+      "tests": [
+        "Componente: total, líneas y estados de error"
+      ],
+      "depends_on": [],
+      "estimate_h": 8,
+      "contract": "Consume GET /api/products (M01-BE-03), GET /api/customers (M03-BE-02), POST /api/orders (M04-BE-02)"
+    },
+    {
+      "key": "M04-FE-02",
+      "title": "Pantalla de mis pedidos con cancelación",
+      "type": "feature",
+      "parent": "M04-FE",
+      "area": "frontend",
+      "repo": "ferreteria/pedidos-web",
+      "module": "pedidos",
+      "rf": [
+        "RF-05",
+        "RF-06"
+      ],
+      "context": "El vendedor sigue y cancela sus pedidos (RF-05, RF-06).",
+      "acceptance": [
+        "Dado un pedido pendiente, cuando lo cancelo y confirmo, entonces aparece cancelado",
+        "Dado un pedido preparado, cuando veo el detalle, entonces no hay opción de cancelar"
+      ],
+      "out_of_scope": [
+        "Filtros avanzados"
+      ],
+      "tests": [
+        "Componente: acciones según estado"
+      ],
+      "depends_on": [],
+      "estimate_h": 4,
+      "contract": "Consume GET /api/orders?mine=true y PATCH /api/orders/:id/status (M04-BE-02, M04-BE-04)"
+    },
+    {
+      "key": "M04-FE-03",
+      "title": "Bandeja de bodega",
+      "type": "feature",
+      "parent": "M04-FE",
+      "area": "frontend",
+      "repo": "ferreteria/pedidos-web",
+      "module": "pedidos",
+      "rf": [
+        "RF-07",
+        "RF-08"
+      ],
+      "context": "Bodega prepara y despacha (RF-07, RF-08).",
+      "acceptance": [
+        "Dada la bandeja, cuando pasan 30 s, entonces se refresca sola",
+        "Dado un conflicto 409, cuando marco un pedido, entonces veo el aviso y la bandeja se actualiza"
+      ],
+      "out_of_scope": [
+        "Notificaciones push"
+      ],
+      "tests": [
+        "Componente: transición y manejo de 409"
+      ],
+      "depends_on": [],
+      "estimate_h": 5,
+      "contract": "Consume GET /api/orders y PATCH /api/orders/:id/status (M04-BE-03, M04-BE-04)"
+    },
+    {
+      "key": "M04-FE-04",
+      "title": "Pruebas del módulo pedidos (web)",
+      "type": "feature",
+      "parent": "M04-FE",
+      "area": "tests",
+      "repo": "ferreteria/pedidos-web",
+      "module": "pedidos",
+      "rf": [
+        "RNF-01",
+        "RF-02",
+        "RF-04",
+        "RF-05",
+        "RF-06",
+        "RF-07",
+        "RF-08"
+      ],
+      "context": "Cierre del módulo.",
+      "acceptance": [
+        "Alta de pedido, cancelación y preparación/despacho cubiertos e2e",
+        "Conflicto de bodega cubierto e2e"
+      ],
+      "out_of_scope": [
+        "Pruebas visuales"
+      ],
+      "tests": [
+        "E2E Playwright: vendedor crea, bodega prepara y despacha"
+      ],
+      "depends_on": [],
+      "estimate_h": 3
+    },
+    {
+      "key": "M05-BE",
+      "title": "Reportes — backend",
+      "type": "module",
+      "parent": null,
+      "area": "module",
+      "repo": "ferreteria/pedidos-api",
+      "module": "reportes",
+      "rf": [
+        "RF-09"
+      ],
+      "context": "Resumen mensual para el gerente.",
+      "acceptance": [],
+      "out_of_scope": [
+        "Gráficos y comparativos (Fase 2)"
+      ],
+      "tests": [],
+      "depends_on": [
+        "M04-BE"
+      ]
+    },
+    {
+      "key": "M05-BE-01",
+      "title": "Resumen mensual por sucursal",
+      "type": "feature",
+      "parent": "M05-BE",
+      "area": "backend",
+      "repo": "ferreteria/pedidos-api",
+      "module": "reportes",
+      "rf": [
+        "RF-09"
+      ],
+      "context": "Cifras del mes sin Excel (RF-09).",
+      "acceptance": [
+        "Dado un mes, cuando consulto, entonces veo por sucursal la cantidad de pedidos despachados en ese mes y su monto, más un total",
+        "Dado un pedido despachado a las 23:30 del último día en hora local, cuando consulto, entonces cuenta en ese mes",
+        "Dado un vendedor, cuando consulto, entonces 403"
+      ],
+      "out_of_scope": [
+        "Exportar a Excel"
+      ],
+      "tests": [
+        "Integración: agregación, borde de zona horaria y permisos"
+      ],
+      "depends_on": [],
+      "estimate_h": 3,
+      "contract": "GET /api/reports/monthly?month=AAAA-MM → [{ branch, dispatchedOrders, totalAmount }]"
+    },
+    {
+      "key": "M05-BE-02",
+      "title": "Pruebas del módulo reportes (API)",
+      "type": "feature",
+      "parent": "M05-BE",
+      "area": "tests",
+      "repo": "ferreteria/pedidos-api",
+      "module": "reportes",
+      "rf": [
+        "RF-09"
+      ],
+      "context": "Cierre del módulo.",
+      "acceptance": [
+        "Cifras coinciden con un set de datos conocido",
+        "Mes sin datos devuelve ceros por sucursal"
+      ],
+      "out_of_scope": [
+        "Pruebas de carga"
+      ],
+      "tests": [
+        "E2E API del resumen con datos sembrados"
+      ],
+      "depends_on": [],
+      "estimate_h": 1
+    },
+    {
+      "key": "M05-FE",
+      "title": "Reportes — frontend",
+      "type": "module",
+      "parent": null,
+      "area": "module",
+      "repo": "ferreteria/pedidos-web",
+      "module": "reportes",
+      "rf": [
+        "RF-09"
+      ],
+      "context": "Tabla del gerente.",
+      "acceptance": [],
+      "out_of_scope": [
+        "Gráficos (Fase 2)"
+      ],
+      "tests": [],
+      "depends_on": [
+        "M05-BE",
+        "M02-FE",
+        "D-04"
+      ]
+    },
+    {
+      "key": "M05-FE-01",
+      "title": "Pantalla de resumen del mes",
+      "type": "feature",
+      "parent": "M05-FE",
+      "area": "frontend",
+      "repo": "ferreteria/pedidos-web",
+      "module": "reportes",
+      "rf": [
+        "RF-09"
+      ],
+      "context": "El gerente ve el mes (RF-09).",
+      "acceptance": [
+        "Dado el gerente, cuando entra, entonces ve el mes en curso por defecto",
+        "Dado un mes sin datos, cuando lo elige, entonces ve el estado vacío"
+      ],
+      "out_of_scope": [
+        "Exportar"
+      ],
+      "tests": [
+        "Componente: tabla y selector de mes"
+      ],
+      "depends_on": [],
+      "estimate_h": 3,
+      "contract": "Consume GET /api/reports/monthly (M05-BE-01)"
+    },
+    {
+      "key": "M05-FE-02",
+      "title": "Pruebas del módulo reportes (web)",
+      "type": "feature",
+      "parent": "M05-FE",
+      "area": "tests",
+      "repo": "ferreteria/pedidos-web",
+      "module": "reportes",
+      "rf": [
+        "RF-09"
+      ],
+      "context": "Cierre del módulo.",
+      "acceptance": [
+        "Cambio de mes cubierto e2e",
+        "Acceso denegado a no gerente cubierto e2e"
+      ],
+      "out_of_scope": [
+        "Pruebas visuales"
+      ],
+      "tests": [
+        "E2E: resumen del gerente"
+      ],
+      "depends_on": [],
+      "estimate_h": 1
+    }
+  ]
+}

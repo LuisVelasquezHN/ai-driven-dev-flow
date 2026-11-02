@@ -1,0 +1,168 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "backlog.json — contrato entre backlog-generator y clickup-tasks",
+  "type": "object",
+  "required": [
+    "project",
+    "version",
+    "tasks"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "project": {
+      "type": "string"
+    },
+    "version": {
+      "const": 1
+    },
+    "prd_ref": {
+      "type": "string",
+      "description": "Nombre o link del PRD"
+    },
+    "spec_ref": {
+      "type": "string",
+      "description": "Nombre o link de la spec técnica"
+    },
+    "mvp_rf": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^RN?F-\\d+$"
+      },
+      "description": "IDs del PRD que están en el MVP; build_plan.py verifica que todos queden cubiertos"
+    },
+    "tasks": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/task"
+      }
+    }
+  },
+  "$defs": {
+    "task": {
+      "type": "object",
+      "required": [
+        "key",
+        "title",
+        "type",
+        "area",
+        "repo",
+        "module",
+        "context",
+        "acceptance",
+        "out_of_scope",
+        "tests",
+        "depends_on"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "type": "string",
+          "pattern": "^[A-Z0-9][A-Z0-9-]*$"
+        },
+        "title": {
+          "type": "string",
+          "maxLength": 80
+        },
+        "type": {
+          "enum": [
+            "module",
+            "feature",
+            "bug"
+          ]
+        },
+        "parent": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "key del module padre; null si es unidad de trabajo"
+        },
+        "area": {
+          "enum": [
+            "module",
+            "db",
+            "backend",
+            "frontend",
+            "design",
+            "tests"
+          ]
+        },
+        "repo": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "owner/name. null solo si area = design"
+        },
+        "module": {
+          "type": "string",
+          "description": "slug del módulo de la spec (tag mod:<slug>)"
+        },
+        "rf": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^RN?F-\\d+$"
+          }
+        },
+        "context": {
+          "type": "string"
+        },
+        "acceptance": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "out_of_scope": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "contract": {
+          "type": "string"
+        },
+        "tests": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "depends_on": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "estimate_h": {
+          "type": "number",
+          "minimum": 0
+        },
+        "repro": {
+          "type": "object",
+          "description": "Solo bugs",
+          "properties": {
+            "steps": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "actual": {
+              "type": "string"
+            },
+            "expected": {
+              "type": "string"
+            },
+            "environment": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}

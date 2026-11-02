@@ -1,0 +1,100 @@
+{
+  "project": "Pedidos Ferretería",
+  "version": 1,
+  "prd_ref": "PRD — Pedidos Ferretería v1.0",
+  "spec_ref": "Spec técnica — Pedidos Ferretería v1.0",
+  "tasks": [
+    {
+      "key": "M01-BE", "title": "Catálogo de productos — backend", "type": "module", "parent": null,
+      "area": "module", "repo": "ferreteria/pedidos-api", "module": "catalogo", "rf": ["RF-01"],
+      "context": "Los pedidos se arman sobre el catálogo; hoy vive en un Excel.",
+      "acceptance": [], "out_of_scope": ["Gestión de stock"], "tests": [], "depends_on": []
+    },
+    {
+      "key": "M01-BE-01", "title": "Crear tablas de categorías y productos", "type": "feature", "parent": "M01-BE",
+      "area": "db", "repo": "ferreteria/pedidos-api", "module": "catalogo", "estimate_h": 2,
+      "context": "Base del catálogo.",
+      "acceptance": ["Dado el esquema migrado, cuando inserto un producto sin categoría, entonces falla por FK", "Dado un código repetido, cuando lo inserto, entonces falla por unicidad"],
+      "out_of_scope": ["Historial de precios"], "contract": "products(id, code UNIQUE, name, category_id FK, price NUMERIC(12,2), active BOOL)",
+      "tests": ["Migración sube y baja limpia"], "depends_on": []
+    },
+    {
+      "key": "M01-BE-02", "title": "Importar catálogo desde Excel", "type": "feature", "parent": "M01-BE",
+      "area": "backend", "repo": "ferreteria/pedidos-api", "module": "catalogo", "estimate_h": 5,
+      "context": "Carga inicial de ~2.000 productos.",
+      "acceptance": ["Dado el Excel válido, cuando lo importo, entonces se crean o actualizan productos por código", "Dado una fila inválida, cuando importo, entonces se reporta la fila y el resto se importa"],
+      "out_of_scope": ["Importación programada"], "contract": "POST /api/products/import (multipart xlsx) → { created, updated, errors: [{row, reason}] }",
+      "tests": ["Integración con Excel de 3 filas, una inválida"], "depends_on": []
+    },
+    {
+      "key": "M01-BE-03", "title": "Listar y buscar productos", "type": "feature", "parent": "M01-BE",
+      "area": "backend", "repo": "ferreteria/pedidos-api", "module": "catalogo", "estimate_h": 3,
+      "context": "El vendedor busca productos al armar pedidos.",
+      "acceptance": ["Dado q='taladro', cuando listo, entonces solo vienen productos cuyo nombre o código coincide", "Dado page=2, cuando listo, entonces vienen 20 productos y el total"],
+      "out_of_scope": ["Búsqueda difusa"], "contract": "GET /api/products?q=&page= → { items: Product[], total }",
+      "tests": ["Integración: búsqueda y paginación"], "depends_on": []
+    },
+    {
+      "key": "M01-BE-04", "title": "Pruebas del módulo catálogo", "type": "feature", "parent": "M01-BE",
+      "area": "tests", "repo": "ferreteria/pedidos-api", "module": "catalogo", "estimate_h": 2,
+      "context": "Cierre del módulo.",
+      "acceptance": ["Cobertura del módulo ≥ 80 %", "Flujo importar → buscar cubierto end-to-end"],
+      "out_of_scope": ["Pruebas de carga"], "tests": ["E2E API: importar y buscar"], "depends_on": []
+    },
+    {
+      "key": "D-01", "title": "Diseñar pantallas de catálogo y pedido", "type": "feature", "parent": null,
+      "area": "design", "repo": null, "module": "pedidos", "estimate_h": 6,
+      "context": "Pantallas base para vendedor.",
+      "acceptance": ["Diseño de búsqueda de productos con estados vacío, carga y error", "Diseño de alta de pedido aprobado por el cliente"],
+      "out_of_scope": ["Dashboard del gerente"], "tests": [], "depends_on": []
+    },
+    {
+      "key": "M02-BE", "title": "Pedidos — backend", "type": "module", "parent": null,
+      "area": "module", "repo": "ferreteria/pedidos-api", "module": "pedidos", "rf": ["RF-03", "RF-04"],
+      "context": "Núcleo del negocio.", "acceptance": [], "out_of_scope": ["Pagos en línea"], "tests": [], "depends_on": ["M01-BE"]
+    },
+    {
+      "key": "M02-BE-01", "title": "Crear tablas de pedidos y líneas", "type": "feature", "parent": "M02-BE",
+      "area": "db", "repo": "ferreteria/pedidos-api", "module": "pedidos", "estimate_h": 2,
+      "context": "Persistencia de pedidos.",
+      "acceptance": ["Dado un pedido sin líneas, cuando lo confirmo, entonces falla", "Dado una línea, cuando guardo, entonces copia el precio vigente del producto"],
+      "out_of_scope": ["Descuentos"], "contract": "orders(id, customer_id, branch_id, status, created_by), order_lines(order_id, product_id, qty, unit_price)",
+      "tests": ["Migración sube y baja limpia"], "depends_on": []
+    },
+    {
+      "key": "M02-BE-02", "title": "Crear y cambiar estado de pedidos", "type": "feature", "parent": "M02-BE",
+      "area": "backend", "repo": "ferreteria/pedidos-api", "module": "pedidos", "estimate_h": 6,
+      "context": "Vendedor crea, bodega prepara y despacha.",
+      "acceptance": ["Dado un pedido 'pendiente', cuando bodega lo marca 'preparado', entonces cambia de estado y queda auditado", "Dado un pedido 'despachado', cuando intento volver a 'pendiente', entonces responde 409"],
+      "out_of_scope": ["Notificaciones al cliente"], "contract": "POST /api/orders · PATCH /api/orders/:id/status { status }",
+      "tests": ["Unitarias de la máquina de estados"], "depends_on": []
+    },
+    {
+      "key": "M02-BE-03", "title": "Pruebas del módulo pedidos", "type": "feature", "parent": "M02-BE",
+      "area": "tests", "repo": "ferreteria/pedidos-api", "module": "pedidos", "estimate_h": 2,
+      "context": "Cierre del módulo.",
+      "acceptance": ["Ciclo completo pendiente → preparado → despachado cubierto", "Transiciones inválidas cubiertas"],
+      "out_of_scope": ["Pruebas de carga"], "tests": ["E2E API del ciclo de vida"], "depends_on": []
+    },
+    {
+      "key": "M02-FE", "title": "Pedidos — frontend", "type": "module", "parent": null,
+      "area": "module", "repo": "ferreteria/pedidos-web", "module": "pedidos", "rf": ["RF-03"],
+      "context": "Pantallas del vendedor.", "acceptance": [], "out_of_scope": ["App móvil nativa"], "tests": [], "depends_on": ["M02-BE", "D-01"]
+    },
+    {
+      "key": "M02-FE-01", "title": "Pantalla de alta de pedido", "type": "feature", "parent": "M02-FE",
+      "area": "frontend", "repo": "ferreteria/pedidos-web", "module": "pedidos", "estimate_h": 8,
+      "context": "El vendedor arma el pedido buscando productos.",
+      "acceptance": ["Dado un cliente elegido, cuando agrego productos, entonces veo el total actualizado", "Dado un error del servidor, cuando confirmo, entonces veo el mensaje y no pierdo las líneas"],
+      "out_of_scope": ["Edición de pedidos confirmados"], "contract": "Consume GET /api/products y POST /api/orders (ver M01-BE-03 y M02-BE-02)",
+      "tests": ["Componente: total y estados de error"], "depends_on": []
+    },
+    {
+      "key": "M02-FE-02", "title": "Pruebas del módulo pedidos (web)", "type": "feature", "parent": "M02-FE",
+      "area": "tests", "repo": "ferreteria/pedidos-web", "module": "pedidos", "estimate_h": 3,
+      "context": "Cierre del módulo.",
+      "acceptance": ["Flujo de alta de pedido cubierto e2e", "Estados vacío/carga/error cubiertos"],
+      "out_of_scope": ["Pruebas visuales"], "tests": ["E2E Playwright del alta de pedido"], "depends_on": []
+    }
+  ]
+}
